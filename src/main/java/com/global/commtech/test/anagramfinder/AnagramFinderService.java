@@ -14,8 +14,11 @@ import java.util.TreeMap;
 
 @Component
 public class AnagramFinderService {
-    @Autowired
     private Printer printer;
+
+    AnagramFinderService(Printer printer) {
+        this.printer = printer;
+    }
 
     private static final Logger logger = LoggerFactory.getLogger(AnagramFinderService.class);
     private static final String separator = ",";
