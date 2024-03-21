@@ -18,37 +18,45 @@ public class AnagramFinderService {
     private Printer printer;
 
     private static final Logger logger = LoggerFactory.getLogger(AnagramFinderService.class);
+    private static final String separator = ",";
 
-     void findAnagrams(final File inputFile) {
+    void findAnagrams(final File inputFile) {
 
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
-            String line = reader.readLine();
-            String nextLine = null;
-            TreeMap<String, StringBuilder> anagramMap = new TreeMap<>();
-            do {
-                while (ifLineExists(line)) {
-                    String key = getUniqueKey(line);
-                    if (anagramMap.containsKey(key)) {
-                        anagramMap.put(key, anagramMap.get(key).append(",").append(line));
-                    } else {
-                        anagramMap.put(key, new StringBuilder(line));
-                    }
-                    nextLine = reader.readLine();
-                    boolean lengthOfNextLineIsNotEqualToCurrentLine = nextLine != null && line.length() != nextLine.length();
-                    if (lengthOfNextLineIsNotEqualToCurrentLine) break;
-                    line = nextLine;
-                }
-
-                anagramMap.values()
-                        .forEach(i -> printer.print(i.toString()));
-                line = nextLine;
-                anagramMap.clear();
-            } while (ifLineExists(nextLine));
-
-
+            groupAnagramsTogether(reader);
         } catch (IOException e) {
             logger.error("Error while reading the data");
         }
+    }
+
+    private void groupAnagramsTogether(BufferedReader reader) throws IOException {
+        String currentLine = reader.readLine();
+        String nextLine = null;
+        TreeMap<String, StringBuilder> anagramMap = new TreeMap<>();
+        do {
+            while (ifLineExists(currentLine)) {
+                updateAnagramMap(currentLine, anagramMap);
+                nextLine = reader.readLine();
+                if (isNextLineIsOfDifferentSize(nextLine, currentLine)) break;
+                currentLine = nextLine;
+            }
+            printer.print(anagramMap.values());
+            currentLine = nextLine;
+            anagramMap.clear();
+        } while (ifLineExists(nextLine));
+    }
+
+    private static void updateAnagramMap(String currentLine, TreeMap<String, StringBuilder> anagramMap) {
+        String key = getUniqueKey(currentLine);
+        if (anagramMap.containsKey(key)) {
+            anagramMap.put(key, anagramMap.get(key).append(separator).append(currentLine));
+        } else {
+            anagramMap.put(key, new StringBuilder(currentLine));
+        }
+    }
+
+    private static boolean isNextLineIsOfDifferentSize(String nextLine, String line) {
+        return nextLine != null && line.length() != nextLine.length();
     }
 
     private static boolean ifLineExists(String line) {
