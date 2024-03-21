@@ -9,14 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 @SpringBootTest(args = {"src/test/resources/example1.txt"})
 @ExtendWith(OutputCaptureExtension.class)
 class AnagramCommandLineRunnerIntegrationTest {
@@ -25,14 +17,10 @@ class AnagramCommandLineRunnerIntegrationTest {
     AnagramCommandLineRunner anagramCommandLineRunner;
 
     @Test
-    void shouldFindAnagrams()  throws IOException {
-       File output = new File("output.txt");
-
-        var reader = new BufferedReader(new FileReader(output));
-
-        List<String> list = reader.lines().toList();
-
-        assertThat(list).contains("abc, bac, cba");
+    void shouldFindAnagrams(final CapturedOutput capturedOutput) {
+        assertThat(capturedOutput.getOut()).contains("abc,bac,cba");
+        assertThat(capturedOutput.getOut()).contains("fun,unf");
+        assertThat(capturedOutput.getOut()).contains("hello");
     }
 
 

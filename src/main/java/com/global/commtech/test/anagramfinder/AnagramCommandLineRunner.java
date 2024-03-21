@@ -16,6 +16,7 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -24,6 +25,8 @@ import org.springframework.util.Assert;
 @RequiredArgsConstructor
 public class AnagramCommandLineRunner implements CommandLineRunner {
     private Logger logger;
+    @Autowired
+    private Printer printer;
 
     @Override
     public void run(final String... args) throws Exception {
@@ -33,30 +36,30 @@ public class AnagramCommandLineRunner implements CommandLineRunner {
 
     }
 
-    private void findAnagrams(File inputFile) {
+    private void findAnagrams(final File inputFile) {
 
-        try ( BufferedReader reader = new BufferedReader(new FileReader(inputFile))){
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
             String line = reader.readLine();
             String nextLine = null;
-            TreeMap<String, StringBuilder> AnagramMap = new TreeMap<>();
+            TreeMap<String, StringBuilder> anagramMap = new TreeMap<>();
             do {
                 while (line != null) {
                     String key = getUniqueKey(line);
-                    if (AnagramMap.containsKey(key)) {
-                        AnagramMap.put(key, AnagramMap.get(key).append(", ").append(line));
+                    if (anagramMap.containsKey(key)) {
+                        anagramMap.put(key, anagramMap.get(key).append(",").append(line));
                     } else {
-                        AnagramMap.put(key, new StringBuilder(line));
+                        anagramMap.put(key, new StringBuilder(line));
                     }
-                     nextLine = reader.readLine();
+                    nextLine = reader.readLine();
                     boolean nextSetOfWords = nextLine != null && line.length() != nextLine.length();
                     if (nextSetOfWords) break;
                     line = nextLine;
                 }
 
-                Path output = Paths.get("output.txt");
-                AppendAnagrams(output, AnagramMap);
+                anagramMap.values()
+                        .forEach(i -> printer.print(i.toString()));
                 line = nextLine;
-                AnagramMap.clear();
+                anagramMap.clear();
             } while (nextLine != null);
 
 
@@ -65,17 +68,13 @@ public class AnagramCommandLineRunner implements CommandLineRunner {
         }
     }
 
-    private static String getUniqueKey(String line) {
+    private static String getUniqueKey(final String line) {
         char[] charKey = line.toCharArray();
         Arrays.sort(charKey);
         return new String(charKey);
     }
 
-    private static void AppendAnagrams(Path output, TreeMap<String, StringBuilder> AnagramMap) throws IOException {
-        Files.write(output, AnagramMap.values(), StandardCharsets.UTF_8, StandardOpenOption.APPEND);
-    }
-
-    private static File validate(String[] args) {
+    private static File validate(final String[] args) {
         Assert.isTrue(args.length == 1, "Please ensure that the input file is provided");
 
         final File file = new File(args[0]);
@@ -83,10 +82,3 @@ public class AnagramCommandLineRunner implements CommandLineRunner {
         return file;
     }
 }
-
-
-//code
-//test
-//log
-//readme
-// time & space complexity
